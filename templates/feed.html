@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Local Feed</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <a href="{{ url_for('main') }}" class="btn btn-secondary mb-3">Back to Main</a>
+    <h2>Local Feed</h2>
+    
+    <!-- Form to filter by location -->
+    <form method="get" action="{{ url_for('feed') }}" class="form-inline mb-4">
+      <div class="form-group mr-2">
+        <input type="text" name="location" class="form-control" placeholder="Enter your area" value="{{ query_location or '' }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+    
+    {% if results %}
+    <div class="list-group">
+      {% for result in results %}
+        <div class="list-group-item">
+          <h5>{{ result.label }}</h5>
+          <p><strong>Uploaded on:</strong> {{ result.upload_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+          {% if result.location %}
+            <p><strong>Location:</strong> {{ result.location }}</p>
+          {% endif %}
+          <p><strong>Uploaded by:</strong> {{ result.user.username }}</p>
+          <img src="{{ url_for('static', filename='uploads/' + result.filename) }}" alt="Image" class="img-fluid" style="max-width:300px;">
+          <hr>
+          {% set like_count = result.likes.count() %}
+          <p><strong>Likes:</strong> {{ like_count }}</p>
+          <!-- Like button: directs to /like/<upload_id> -->
+          <a href="{{ url_for('like', upload_id=result.id) }}" class="btn btn-sm btn-outline-primary">
+            {% if current_user.id in result.likes | map(attribute='user_id') | list %}
+              Unlike
+            {% else %}
+              Like
+            {% endif %}
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No uploads found for the specified area.</p>
+  {% endif %}
+  </div>
+</body>
+</html>

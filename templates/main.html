@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Main Page</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+  <div class="container text-center mt-5">
+    <h1 class="mb-4">Animal Recognition App</h1>
+    {% if current_user.is_authenticated %}
+      <p>Welcome, {{ current_user.username }}! You have {{ current_user.points }} points.</p>
+      <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg mr-3">Upload Image</a>
+      <a href="{{ url_for('history') }}" class="btn btn-info btn-lg mr-3">History</a>
+      <a href="{{ url_for('leaderboard') }}" class="btn btn-success btn-lg mr-3">Leaderboard</a>
+      <a href="{{ url_for('profile') }}" class="btn btn-secondary btn-lg mr-3">Profile</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-warning btn-lg">Logout</a>
+      <a href="{{ url_for('feed') }}" class="btn btn-dark btn-lg mr-3">Local Feed</a>
+      
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg mr-3">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-success btn-lg mr-3">Register</a>
+    {% endif %}
+  </div>
+</body>
+</html>

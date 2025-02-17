@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ user.username }}'s Profile</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <a href="{{ url_for('main') }}" class="btn btn-secondary mb-3">Back to Main</a>
+    <h2>{{ user.username }}'s Profile</h2>
+    <p><strong>Points:</strong> {{ user.points }}</p>
+    
+    <h3>Your Achievements</h3>
+    {% if user.achievements %}
+      <ul class="list-group mb-4">
+        {% for ach in user.achievements %}
+          <li class="list-group-item">
+            <strong>{{ ach.achievement_name }}</strong> - {{ ach.description }}
+            <br>
+            <small class="text-muted">Awarded on: {{ ach.awarded_date.strftime('%Y-%m-%d') }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>You haven't earned any achievements yet.</p>
+    {% endif %}
+    
+    <h3>Your Uploads</h3>
+    {% if uploads %}
+      <div class="row">
+        {% for upload in uploads %}
+          <div class="col-md-4">
+            <div class="card mb-3">
+              <img src="{{ url_for('static', filename='uploads/' + upload.filename) }}" class="card-img-top" alt="Image">
+              <div class="card-body">
+                <h5 class="card-title">{{ upload.label }}</h5>
+                <p class="card-text"><small class="text-muted">{{ upload.upload_time.strftime('%Y-%m-%d %H:%M:%S') }}</small></p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>You haven't uploaded any images yet. <a href="{{ url_for('upload') }}">Upload one now!</a></p>
+    {% endif %}
+  </div>
+</body>
+</html>

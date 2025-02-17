@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload History</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <a href="{{ url_for('main') }}" class="btn btn-secondary mb-3">Back to Main</a>
+    <h2>Upload History</h2>
+    {% if results %}
+      <div class="list-group mt-3">
+        {% for result in results %}
+          <div class="list-group-item">
+            <h5>{{ result.upload_time.strftime('%Y-%m-%d %H:%M:%S') }}</h5>
+            <p><strong>Filename:</strong> {{ result.filename }}</p>
+            <p><strong>Label:</strong> {{ result.label }}</p>
+            
+            {% if result.parsed_stats %}
+              <p><strong>Statistics:</strong></p>
+              <table class="table table-sm table-bordered">
+                <thead class="thead-dark">
+                  <tr>
+                    <th>Statistic</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in result.parsed_stats.items() %}
+                    <tr>
+                      <td>{{ key }}</td>
+                      <td>{{ value }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              <p>{{ result.summary_text }}</p>
+            {% endif %}
+            
+            <img src="{{ url_for('static', filename='uploads/' + result.filename) }}"
+                 alt="Image"
+                 class="img-thumbnail mt-2"
+                 style="max-width:200px;">
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No uploads yet.</p>
+    {% endif %}
+  </div>
+</body>
+</html>
+
