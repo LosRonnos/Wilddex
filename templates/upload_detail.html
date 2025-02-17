@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ upload.label }} - Details</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <a href="{{ url_for('main') }}" class="btn btn-secondary mb-3">Back to Main</a>
+    <h2>{{ upload.label }}</h2>
+    <p><strong>Uploaded on:</strong> {{ upload.upload_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+    {% if upload.location %}
+      <p><strong>Location:</strong> {{ upload.location }}</p>
+    {% endif %}
+    <p><strong>Uploaded by:</strong> {{ upload.user.username }}</p>
+    <img src="{{ url_for('static', filename='uploads/' + upload.filename) }}" alt="Image" class="img-fluid" style="max-width:500px;">
+    
+    <hr>
+    <h3>Comments</h3>
+    {% if comments %}
+      <ul class="list-group mb-3">
+        {% for comment in comments %}
+          <li class="list-group-item">
+            <p>{{ comment.content }}</p>
+            <small class="text-muted">By {{ comment.user.username }} on {{ comment.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No comments yet. Be the first to comment!</p>
+    {% endif %}
+    
+    <h4>Add a Comment</h4>
+    <form method="post" class="mb-3">
+      <div class="form-group">
+        <textarea name="content" class="form-control" placeholder="Your comment here..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Comment</button>
+    </form>
+    
+  </div>
+</body>
+</html>

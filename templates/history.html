@@ -38,11 +38,13 @@
             {% else %}
               <p>{{ result.summary_text }}</p>
             {% endif %}
-            
+            <a href="{{ url_for('upload_detail', upload_id=result.id) }}">
             <img src="{{ url_for('static', filename='uploads/' + result.filename) }}"
+            
                  alt="Image"
                  class="img-thumbnail mt-2"
                  style="max-width:200px;">
+                </a>
           </div>
         {% endfor %}
       </div>

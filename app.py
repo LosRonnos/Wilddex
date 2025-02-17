@@ -44,6 +44,16 @@ class Like(db.Model):
     image_result_id = db.Column(db.Integer, db.ForeignKey('image_result.id'), nullable=False)
     __table_args__ = (db.UniqueConstraint('user_id', 'image_result_id', name='_user_image_uc'),)
 
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    image_result_id = db.Column(db.Integer, db.ForeignKey('image_result.id'), nullable=False)
+    
+    # Optional: relationships for easier access
+    user = db.relationship('User', backref='comments')
+    image_result = db.relationship('ImageResult', backref='comments')
 
 
 # Database model for storing image results
@@ -206,6 +216,27 @@ def upload():
                                    stats_table=stats_table,
                                    image_filename=filename)
     return render_template('upload.html')
+
+@app.route('/upload/<int:upload_id>', methods=['GET', 'POST'])
+@login_required
+def upload_detail(upload_id):
+    upload = ImageResult.query.get_or_404(upload_id)
+    
+    # Handle new comment submission
+    if request.method == 'POST':
+        content = request.form.get('content')
+        if content:
+            new_comment = Comment(content=content, user_id=current_user.id, image_result_id=upload_id)
+            db.session.add(new_comment)
+            db.session.commit()
+            flash("Comment added!")
+            return redirect(url_for('upload_detail', upload_id=upload_id))
+        else:
+            flash("Please enter some text for your comment.")
+    
+    # Fetch comments for this upload, ordered by timestamp ascending
+    comments = Comment.query.filter_by(image_result_id=upload_id).order_by(Comment.timestamp.asc()).all()
+    return render_template('upload_detail.html', upload=upload, comments=comments)
 
 @app.route('/feed')
 @login_required

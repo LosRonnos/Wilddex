@@ -32,6 +32,8 @@
           <hr>
           {% set like_count = result.likes.count() %}
           <p><strong>Likes:</strong> {{ like_count }}</p>
+          <a href="{{ url_for('upload_detail', upload_id=result.id) }}" class="btn btn-sm btn-info mt-2">View Details</a>
+
           <!-- Like button: directs to /like/<upload_id> -->
           <a href="{{ url_for('like', upload_id=result.id) }}" class="btn btn-sm btn-outline-primary">
             {% if current_user.id in result.likes | map(attribute='user_id') | list %}
