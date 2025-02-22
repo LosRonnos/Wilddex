@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Map</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 600px; }
+  </style>
+</head>
+<body>
+  <div class="container mt-3">
+    <a href="{{ url_for('main') }}" class="btn btn-secondary mb-3">Back to Main</a>
+    <h2>Uploads Map</h2>
+    <div id="map"></div>
+  </div>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Initialize the map centered at a default location and zoom level
+    var map = L.map('map').setView([20, 0], 2);
+
+    // Add a tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Markers data passed from the backend
+    var markers = {{ markers | tojson }};
+    markers.forEach(function(marker) {
+      var popupContent = '<strong>' + marker.label + '</strong><br>' +
+                         'Uploaded by: ' + marker.username + '<br>' +
+                         '<a href="' + marker.detail_url + '">View Details</a>';
+      L.marker([marker.lat, marker.lon]).addTo(map)
+         .bindPopup(popupContent);
+    });
+  </script>
+</body>
+</html>

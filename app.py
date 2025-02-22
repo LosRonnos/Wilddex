@@ -70,6 +70,10 @@ class ImageResult(db.Model):
     upload_time = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Link to User
     location = db.Column(db.String(100), nullable=True)  # NEW field for area
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    user = db.relationship('User', backref='uploads')
+    likes = db.relationship('Like', backref='upload', lazy='dynamic')
 
 class UserAchievement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -132,6 +136,27 @@ def profile():
     uploads = ImageResult.query.filter_by(user_id=current_user.id).order_by(ImageResult.upload_time.desc()).all()
     return render_template('profile.html', user=current_user, uploads=uploads)
 
+@app.route('/map')
+@login_required
+def map_view():
+    # Query uploads that have valid coordinates
+    uploads = ImageResult.query.filter(
+        ImageResult.latitude.isnot(None),
+        ImageResult.longitude.isnot(None)
+    ).all()
+    
+    # Prepare marker data for the template, including detail_url
+    markers = [{
+        'lat': upload.latitude,
+        'lon': upload.longitude,
+        'label': upload.label,
+        'id': upload.id,
+        'username': upload.user.username if upload.user else 'Unknown',
+        'detail_url': url_for('upload_detail', upload_id=upload.id)
+    } for upload in uploads]
+    
+    return render_template('map.html', markers=markers)
+
 
 @app.route('/logout')
 @login_required
@@ -188,11 +213,25 @@ def upload():
             # Get location from form (optional)
             location = request.form.get('location', None)
             
-            new_result = ImageResult(filename=filename, label=label,
-                                     summary_text=summary_text,
-                                     stats_json=json.dumps(stats_table) if stats_table else None,
-                                     user_id=current_user.id,
-                                     location=location)
+            # Get coordinates, converting to float if provided
+            latitude = request.form.get('latitude')
+            longitude = request.form.get('longitude')
+            try:
+                latitude = float(latitude) if latitude else None
+                longitude = float(longitude) if longitude else None
+            except ValueError:
+                latitude, longitude = None, None
+
+            new_result = ImageResult(
+                filename=filename,
+                label=label,
+                summary_text=summary_text,
+                stats_json=json.dumps(stats_table) if stats_table else None,
+                user_id=current_user.id,
+                location=location,
+                latitude=latitude,
+                longitude=longitude
+            )
             db.session.add(new_result)
             
             # Award points (e.g., 10 points per upload)

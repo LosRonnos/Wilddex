@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <title>Upload Image</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map-picker { height: 300px; margin-bottom: 15px; }
+  </style>
 </head>
 <body class="bg-light">
   <div class="container mt-5">
@@ -13,11 +18,20 @@
       <div class="form-group">
         <input type="file" name="file" class="form-control-file" accept="image/*" required>
       </div>
-      <!-- New location field -->
       <div class="form-group">
         <label for="location">Location (optional):</label>
         <input type="text" class="form-control" id="location" name="location" placeholder="e.g., New York">
       </div>
+      <!-- New: Button to find location on map -->
+      <button type="button" class="btn btn-info mb-3" id="find-location-btn">Find Location</button>
+      
+      <!-- Map Picker for coordinates -->
+      <label>Pick a location on the map:</label>
+      <div id="map-picker"></div>
+      <!-- Hidden inputs to store the picked coordinates -->
+      <input type="hidden" id="latitude" name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
+      
       <button type="submit" class="btn btn-primary">Upload</button>
     </form>
     {% with messages = get_flashed_messages() %}
@@ -30,5 +44,72 @@
       {% endif %}
     {% endwith %}
   </div>
+  
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Initialize the map picker
+    var map = L.map('map-picker').setView([20, 0], 2); // Default view
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    
+    var marker; // To store the marker on the map
+    
+    // When the user clicks on the map, place or move the marker
+    map.on('click', function(e) {
+      var lat = e.latlng.lat;
+      var lon = e.latlng.lng;
+      
+      if (marker) {
+        marker.setLatLng(e.latlng);
+      } else {
+        marker = L.marker(e.latlng).addTo(map);
+      }
+      
+      document.getElementById('latitude').value = lat;
+      document.getElementById('longitude').value = lon;
+    });
+    
+    // When the user clicks the "Find Location" button, use Nominatim to geocode the location input
+    document.getElementById('find-location-btn').addEventListener('click', function() {
+      var locationInput = document.getElementById('location').value;
+      if (!locationInput) {
+        alert("Please enter a location to search for.");
+        return;
+      }
+      
+      // Use Nominatim API to search for the location (be mindful of usage limits)
+      fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(locationInput))
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            var lat = parseFloat(data[0].lat);
+            var lon = parseFloat(data[0].lon);
+            
+            // Recenter the map to the found location
+            map.setView([lat, lon], 13);
+            
+            // Place or move the marker to the found location
+            if (marker) {
+              marker.setLatLng([lat, lon]);
+            } else {
+              marker = L.marker([lat, lon]).addTo(map);
+            }
+            
+            // Update the hidden input fields
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+          } else {
+            alert("Location not found. Please try a different query.");
+          }
+        })
+        .catch(error => {
+          console.error("Error with geocoding:", error);
+          alert("An error occurred while searching for the location.");
+        });
+    });
+  </script>
 </body>
 </html>
